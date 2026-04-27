@@ -27,6 +27,10 @@ public class TaskConfiguration : IEntityTypeConfiguration<Entities.Task>
         builder.Property(t => t.CreatedAt)
             .HasDefaultValueSql("GETUTCDATE()");
 
+        builder.Property(p => p.UpdatedAt)
+            .HasColumnType("datetime2")
+            .IsRequired(false);
+
         // Relationship: many Tasks belong to one Project
         builder.HasOne(t => t.Project)
             .WithMany(p => p.Tasks)
