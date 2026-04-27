@@ -28,6 +28,10 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.Property(p => p.CreatedAt)
             .HasDefaultValueSql("GETUTCDATE()");
 
+        builder.Property(p => p.UpdatedAt)
+            .HasColumnType("datetime2")
+            .IsRequired(false);
+
         // Relationship: many Projects belong to one Tenant
         // HasOne says "a Project has one Tenant"
         // WithMany says "that Tenant has many Projects"

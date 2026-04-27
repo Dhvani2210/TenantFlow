@@ -11,6 +11,7 @@ public class Project
     public string? Description { get; set; }  // nullable — mirrors NULL allowed in SQL
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
     // Navigation property UP to the owning Tenant
     public Tenant Tenant { get; set; } = null!;
