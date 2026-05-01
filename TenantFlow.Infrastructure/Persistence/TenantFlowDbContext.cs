@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TenantFlow.Api.Data.Configurations;
-using TenantFlow.Api.Entities;
+using TenantFlow.Persistence.Configurations;
+using TenantFlow.Domain.Entities;
 
-namespace TenantFlow.Api.Data;
+namespace TenantFlow.Infrastructure.Persistence;
 
 public class TenantFlowDbContext : DbContext
 {
@@ -15,7 +15,7 @@ public class TenantFlowDbContext : DbContext
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<User> Users => Set<User>();
-    public DbSet<Entities.Task> Tasks => Set<Entities.Task>();
+    public DbSet<Domain.Entities.Task> Tasks => Set<Domain.Entities.Task>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

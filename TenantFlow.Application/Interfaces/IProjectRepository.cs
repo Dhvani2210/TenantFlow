@@ -1,6 +1,6 @@
-﻿using TenantFlow.Api.Entities;
+﻿using TenantFlow.Domain.Entities;
 
-namespace TenantFlow.Api.Repositories.Interfaces;
+namespace TenantFlow.Application.Interfaces;
 public interface IProjectRepository
 {
     Task<IEnumerable<Project>> GetAllAsync(Guid tenantId);

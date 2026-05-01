@@ -1,4 +1,4 @@
-﻿namespace TenantFlow.Api.DTOs;
+﻿namespace TenantFlow.Application.DTOs;
 
 // This is the shape of a Project as the outside world sees it.
 // No navigation properties, no EF Core concerns, no IsDeleted flag.

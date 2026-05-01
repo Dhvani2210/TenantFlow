@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TenantFlow.Api.Entities;
+using TenantFlow.Domain.Entities;
 
-namespace TenantFlow.Api.Data.Configurations;
+namespace TenantFlow.Persistence.Configurations;
 
 public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
 {

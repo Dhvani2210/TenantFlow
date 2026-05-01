@@ -1,9 +1,10 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using TenantFlow.Api.Data;
-using TenantFlow.Api.Entities;
-using TenantFlow.Api.Repositories.Interfaces;
+using TenantFlow.Infrastructure.Persistence;
+using TenantFlow.Domain.Entities;
+using TenantFlow.Application.Interfaces;
 
+namespace TenantFlow.Infrastructure.Repositories;
 public class ProjectRepository : IProjectRepository
 {
     private readonly TenantFlowDbContext _context;

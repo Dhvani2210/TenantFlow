@@ -1,4 +1,4 @@
-﻿namespace TenantFlow.Api.Entities;
+﻿namespace TenantFlow.Domain.Entities;
 
 public class Project
 {

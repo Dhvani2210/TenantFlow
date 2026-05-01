@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TenantFlow.Api.DTOs;
-using TenantFlow.Api.Entities;
-using TenantFlow.Api.Repositories.Interfaces;
+using TenantFlow.Application.DTOs;
+using TenantFlow.Domain.Entities;
+using TenantFlow.Application.Interfaces;
 
 namespace TenantFlow.Api.Controllers;
 
@@ -16,22 +16,13 @@ public class ProjectsController : ControllerBase
         _repository = repository;
     }
 
-    private static ProjectDto MapToDto(Project p) => new()
-    {
-        Id = p.ProjectId,
-        TenantId = p.TenantId,
-        Name = p.Name,
-        Description = p.Description,
-        IsActive = p.IsActive,
-        CreatedAt = p.CreatedAt,
-        UpdatedAt = p.UpdatedAt
-    };
+
 
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] Guid tenantId)
     {
         var projects = await _repository.GetAllAsync(tenantId);
-        var dtos = projects.Select(MapToDto);
+        var dtos = projects.Select(ProjectMappings.ToDto);
         return Ok(dtos);
     }
 
@@ -40,7 +31,7 @@ public class ProjectsController : ControllerBase
     {
         var project = await _repository.GetByIdAsync(id, tenantId);
         if (project is null) return NotFound();
-        return Ok(MapToDto(project));
+        return Ok(ProjectMappings.ToDto(project));
     }
 
     [HttpPost]
@@ -63,7 +54,7 @@ public class ProjectsController : ControllerBase
         var created = await _repository.CreateAsync(project);
         return CreatedAtAction(nameof(GetById),
             new { id = created.ProjectId, tenantId },
-            MapToDto(created));
+            ProjectMappings.ToDto(created));
     }
 
     [HttpPut("{id}")]
@@ -81,7 +72,7 @@ public class ProjectsController : ControllerBase
 
         var updated = await _repository.UpdateAsync(project);
         if (updated is null) return NotFound();
-        return Ok(MapToDto(updated));
+        return Ok(ProjectMappings.ToDto(updated));
     }
 
     [HttpDelete("{id}")]
