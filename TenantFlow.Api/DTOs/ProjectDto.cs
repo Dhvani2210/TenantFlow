@@ -10,6 +10,8 @@ public class ProjectDto
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
     public Guid TenantId { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public bool IsActive { get; set; }
 }
 
 // Separate DTO for creation — the client provides Name and Description.
@@ -24,4 +26,5 @@ public class UpdateProjectDto
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public bool IsActive { get; set; }
 }
