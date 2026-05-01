@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using TenantFlow.Api.Data;
 using Scalar.AspNetCore;
 using System.Runtime.CompilerServices;
-using TenantFlow.Api.Repositories;
-using TenantFlow.Api.Repositories.Interfaces;
+using TenantFlow.Infrastructure.Repositories;
+using TenantFlow.Infrastructure.Persistence;
+using TenantFlow.Application.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

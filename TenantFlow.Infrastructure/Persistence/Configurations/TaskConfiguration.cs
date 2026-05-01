@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TenantFlow.Api.Entities;
+using TenantFlow.Domain.Entities;
 
-namespace TenantFlow.Api.Data.Configurations;
+namespace TenantFlow.Persistence.Configurations;
 
-public class TaskConfiguration : IEntityTypeConfiguration<Entities.Task>
+public class TaskConfiguration : IEntityTypeConfiguration<Domain.Entities.Task>
 {
-    public void Configure(EntityTypeBuilder<Entities.Task> builder)
+    public void Configure(EntityTypeBuilder<Domain.Entities.Task> builder)
     {
         builder.ToTable("Tasks", "dbo");
         builder.HasKey(t => t.TaskId);
