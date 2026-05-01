@@ -1,13 +1,11 @@
-﻿using TenantFlow.Api.DTOs;
-namespace TenantFlow.Api.Repositories.Interfaces;
+﻿using TenantFlow.Api.Entities;
 
+namespace TenantFlow.Api.Repositories.Interfaces;
 public interface IProjectRepository
 {
-    // Every method takes tenantId — tenant isolation is enforced
-    // at this layer, not left to individual callers to remember.
-    Task<IEnumerable<ProjectDto>> GetAllAsync(Guid tenantId);
-    Task<ProjectDto?> GetByIdAsync(Guid id, Guid tenantId);
-    Task<ProjectDto> CreateAsync(Guid tenantId, CreateProjectDto dto);
-    Task<ProjectDto?> UpdateAsync(Guid id, Guid tenantId, UpdateProjectDto dto);
+    Task<IEnumerable<Project>> GetAllAsync(Guid tenantId);
+    Task<Project?> GetByIdAsync(Guid id, Guid tenantId);
+    Task<Project> CreateAsync(Project project);
+    Task<Project?> UpdateAsync(Project project);
     Task<bool> DeleteAsync(Guid id, Guid tenantId);
 }
