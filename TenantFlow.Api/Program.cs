@@ -3,6 +3,8 @@ using Scalar.AspNetCore;
 using System.Runtime.CompilerServices;
 using TenantFlow.Infrastructure.Repositories;
 using TenantFlow.Infrastructure;
+
+
 using TenantFlow.Application.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
