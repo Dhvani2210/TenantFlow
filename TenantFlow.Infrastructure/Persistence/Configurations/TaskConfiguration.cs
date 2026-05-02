@@ -45,5 +45,15 @@ public class TaskConfiguration : IEntityTypeConfiguration<Domain.Entities.Task>
             .HasForeignKey(t => t.AssignedToUserId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(t => t.TenantId)
+            .IsRequired();
+
+        // No navigation property on Task for Tenant — TenantId is purely for query filtering
+        // HasOne<Tenant>() uses the type parameter directly instead of a lambda
+        builder.HasOne<Tenant>()
+            .WithMany()                          // Tenant has no Tasks collection navigation
+            .HasForeignKey(t => t.TenantId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
