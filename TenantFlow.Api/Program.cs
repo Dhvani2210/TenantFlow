@@ -2,14 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using System.Runtime.CompilerServices;
 using TenantFlow.Infrastructure.Repositories;
-using TenantFlow.Infrastructure.Persistence;
+using TenantFlow.Infrastructure;
 using TenantFlow.Application.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<TenantFlowDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-//.LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information));
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 
