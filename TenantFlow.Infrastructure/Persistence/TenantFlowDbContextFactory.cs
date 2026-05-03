@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
 
 namespace TenantFlow.Infrastructure.Persistence;
 
@@ -10,17 +9,12 @@ public class TenantFlowDbContextFactory : IDesignTimeDbContextFactory<TenantFlow
 {
     public TenantFlowDbContext CreateDbContext(string[] args)
     {
-        // Walk up from Infrastructure/bin to find the API project's appsettings.json
-        // This is necessary because EF tooling runs from the Infrastructure project directory
-        var basePath = Path.Combine(Directory.GetCurrentDirectory(), "../TenantFlow.Api");
-
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(basePath)
-            .AddJsonFile("appsettings.json")
-            .Build();
-
         var optionsBuilder = new DbContextOptionsBuilder<TenantFlowDbContext>();
-        optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+
+        // Hardcoded connection string for EF Core tooling only.
+        // This class is never called at runtime — DI handles that.
+        optionsBuilder.UseSqlServer(
+            "Server=LAPTOP-ITSG6C0Q\\Dhvni,1433;Database=TenantFlowDb;Trusted_Connection=True;TrustServerCertificate=True;");
 
         return new TenantFlowDbContext(optionsBuilder.Options);
     }
