@@ -3,7 +3,7 @@
 namespace TenantFlow.Application.Interfaces;
 public interface IProjectRepository
 {
-    Task<IEnumerable<Project>> GetAllAsync(Guid tenantId);
+    Task<IEnumerable<Project>> GetAllAsync();
     Task<Project?> GetByIdAsync(Guid id, Guid tenantId);
     Task<Project> CreateAsync(Project project);
     Task<Project?> UpdateAsync(Project project);

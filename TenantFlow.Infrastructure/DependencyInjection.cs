@@ -6,6 +6,7 @@ using TenantFlow.Infrastructure.Persistence;
 using TenantFlow.Infrastructure.Repositories;
 using TenantFlow.Infrastructure.Services;
 using TenantFlow.Application.Common.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace TenantFlow.Infrastructure;
 
@@ -19,7 +20,9 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddDbContext<TenantFlowDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+                .LogTo(Console.WriteLine, LogLevel.Information)
+                .EnableSensitiveDataLogging());
 
         services.AddScoped<IProjectRepository, ProjectRepository>();
 

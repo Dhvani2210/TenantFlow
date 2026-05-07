@@ -1,10 +1,10 @@
-﻿using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TenantFlow.Infrastructure.Persistence;
 using TenantFlow.Domain.Entities;
 using TenantFlow.Application.Interfaces;
 
 namespace TenantFlow.Infrastructure.Repositories;
+
 public class ProjectRepository : IProjectRepository
 {
     private readonly TenantFlowDbContext _context;
@@ -14,17 +14,16 @@ public class ProjectRepository : IProjectRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Project>> GetAllAsync(Guid tenantId)
+    public async Task<IEnumerable<Project>> GetAllAsync()
     {
-        return await _context.Projects
-            .FromSqlRaw("EXEC usp_GetProjectsByTenant {0}", tenantId)
-            .ToListAsync();
+        // No TenantId filter needed here.
+        // The global query filter in TenantFlowDbContext automatically appends
+        // WHERE TenantId = <current tenant> to every query on this entity.
+        return await _context.Projects.ToListAsync();
     }
 
     public async Task<Project?> GetByIdAsync(Guid id, Guid tenantId)
     {
-        // Single entity lookup — stored proc for this comes in Phase 3.
-        // For now, LINQ is fine here. Tenant isolation is still enforced.
         return await _context.Projects
             .FirstOrDefaultAsync(p => p.ProjectId == id
                                && p.TenantId == tenantId
@@ -33,24 +32,10 @@ public class ProjectRepository : IProjectRepository
 
     public async Task<Project> CreateAsync(Project project)
     {
-        var idParam = new SqlParameter("@ProjectId", project.ProjectId);
-        var tenantIdParam = new SqlParameter("@TenantId", project.TenantId);
-        var nameParam = new SqlParameter("@Name", project.Name);
-        var descriptionParam = new SqlParameter("@Description",
-            project.Description ?? (object)DBNull.Value);
-        var isActiveParam = new SqlParameter("@IsActive", project.IsActive);
-        var createdAtParam = new SqlParameter("@CreatedAt", project.CreatedAt);
-        var newIdParam = new SqlParameter("@NewId", System.Data.SqlDbType.UniqueIdentifier)
-        {
-            Direction = System.Data.ParameterDirection.Output
-        };
-
-        await _context.Database.ExecuteSqlRawAsync(
-            "EXEC usp_CreateProject @ProjectId, @TenantId, @Name, @Description, @IsActive, @CreatedAt, @NewId OUTPUT",
-            idParam, tenantIdParam, nameParam, descriptionParam,
-            isActiveParam, createdAtParam, newIdParam);
-
-        project.ProjectId = (Guid)newIdParam.Value;
+        // EF Core generates the INSERT automatically.
+        // No manual SqlParameters needed.
+        _context.Projects.Add(project);
+        await _context.SaveChangesAsync();
         return project;
     }
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TenantFlow.Application.Common.Interfaces;
 using TenantFlow.Persistence.Configurations;
 using TenantFlow.Domain.Entities;
 
@@ -6,12 +7,16 @@ namespace TenantFlow.Infrastructure.Persistence;
 
 public class TenantFlowDbContext : DbContext
 {
-    // The constructor receives options (connection string, provider, etc.)
-    // and passes them up to the base DbContext class
-    public TenantFlowDbContext(DbContextOptions<TenantFlowDbContext> options)
-        : base(options) { }
+    private readonly ITenantContext _tenantContext;
 
-    // One DbSet per entity — these are your C# "tables"
+    public TenantFlowDbContext(
+        DbContextOptions<TenantFlowDbContext> options,
+        ITenantContext tenantContext)
+        : base(options)
+    {
+        _tenantContext = tenantContext;
+    }
+
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<User> Users => Set<User>();
@@ -19,11 +24,20 @@ public class TenantFlowDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // This single line finds every IEntityTypeConfiguration class
-        // in this assembly and applies them all automatically
-        // So as you add more entities later, you just add a config class
-        // and this line picks it up — no changes needed here
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(TenantFlowDbContext).Assembly);
+
+        // Global query filters — automatically appended as WHERE clauses on every
+        // query for these entities. Tenant isolation is now structural, not procedural.
+        // The lambda reads _tenantContext.TenantId at query execution time,
+        // not at startup — so each scoped request gets the correct tenant.
+        modelBuilder.Entity<Project>()
+            .HasQueryFilter(p => p.TenantId == _tenantContext.TenantId);
+
+        modelBuilder.Entity<Domain.Entities.Task>()
+            .HasQueryFilter(t => t.TenantId == _tenantContext.TenantId);
+
+        modelBuilder.Entity<User>()
+            .HasQueryFilter(u => u.TenantId == _tenantContext.TenantId);
 
         base.OnModelCreating(modelBuilder);
     }
