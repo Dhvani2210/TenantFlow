@@ -15,8 +15,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
-
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
@@ -45,6 +43,7 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();
 app.MapControllers();

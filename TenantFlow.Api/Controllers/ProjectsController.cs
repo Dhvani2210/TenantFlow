@@ -24,7 +24,7 @@ public class ProjectsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var projects = await _repository.GetAllAsync(_tenantContext.TenantId);
+        var projects = await _repository.GetAllAsync();
         var dtos = projects.Select(ProjectMappings.ToDto);
         return Ok(dtos);
     }
