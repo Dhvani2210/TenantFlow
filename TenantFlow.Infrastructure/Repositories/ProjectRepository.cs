@@ -22,12 +22,10 @@ public class ProjectRepository : IProjectRepository
         return await _context.Projects.ToListAsync();
     }
 
-    public async Task<Project?> GetByIdAsync(Guid id, Guid tenantId)
+    public async Task<Project?> GetByIdAsync(Guid id)
     {
         return await _context.Projects
-            .FirstOrDefaultAsync(p => p.ProjectId == id
-                               && p.TenantId == tenantId
-                               && p.IsActive);
+            .FirstOrDefaultAsync(p => p.ProjectId == id && p.IsActive);
     }
 
     public async Task<Project> CreateAsync(Project project)
@@ -42,9 +40,7 @@ public class ProjectRepository : IProjectRepository
     public async Task<Project?> UpdateAsync(Project project)
     {
         var existing = await _context.Projects
-            .FirstOrDefaultAsync(p => p.ProjectId == project.ProjectId
-                               && p.TenantId == project.TenantId
-                               && p.IsActive);
+            .FirstOrDefaultAsync(p => p.ProjectId == project.ProjectId && p.IsActive);
 
         if (existing is null)
             return null;
@@ -57,12 +53,10 @@ public class ProjectRepository : IProjectRepository
         return existing;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, Guid tenantId)
+    public async Task<bool> DeleteAsync(Guid id)
     {
         var existing = await _context.Projects
-            .FirstOrDefaultAsync(p => p.ProjectId == id
-                               && p.TenantId == tenantId
-                               && p.IsActive);
+            .FirstOrDefaultAsync(p => p.ProjectId == id && p.IsActive);
 
         if (existing is null)
             return false;

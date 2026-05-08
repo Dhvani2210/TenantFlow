@@ -1,88 +1,79 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TenantFlow.Application.DTOs;
-using TenantFlow.Domain.Entities;
 using TenantFlow.Application.Interfaces;
-using TenantFlow.Application.Common.Interfaces;
 
 namespace TenantFlow.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class ProjectsController : ControllerBase
+public class ProjectsController : ApiBaseController
 {
-    private readonly IProjectRepository _repository;
-    private readonly ITenantContext _tenantContext;
+    private readonly IProjectService _projectService;
 
-    public ProjectsController(IProjectRepository repository, ITenantContext tenantContext)
+    public ProjectsController(IProjectService projectService)
     {
-        _repository = repository;
-        _tenantContext = tenantContext;
+        _projectService = projectService;
     }
-
-
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var projects = await _repository.GetAllAsync();
-        var dtos = projects.Select(ProjectMappings.ToDto);
-        return Ok(dtos);
+        var result = await _projectService.GetAllAsync();
+
+        // If something went wrong at the infrastructure level, HandleFailure
+        // maps the ErrorType to the right HTTP status code automatically.
+        if (!result.IsSuccess)
+            return HandleFailure(result);
+
+        return Ok(result.Value);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var project = await _repository.GetByIdAsync(id, _tenantContext.TenantId);
-        if (project is null) return NotFound();
-        return Ok(ProjectMappings.ToDto(project));
+        var result = await _projectService.GetByIdAsync(id);
+
+        if (!result.IsSuccess)
+            return HandleFailure(result);
+
+        return Ok(result.Value);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create( [FromBody] CreateProjectDto dto)
+    public async Task<IActionResult> Create([FromBody] CreateProjectDto dto)
     {
-        // Controller maps DTO → entity before passing down.
-        // In Phase 2 this mapping moves to the service layer.
-        var project = new Project
-        {
-            ProjectId = Guid.NewGuid(),
-            TenantId = _tenantContext.TenantId,
-            Name = dto.Name,
-            Description = dto.Description,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var result = await _projectService.CreateAsync(dto);
 
-        var created = await _repository.CreateAsync(project);
-        return CreatedAtAction(nameof(GetById),
-            new { id = created.ProjectId, _tenantContext.TenantId },
-            ProjectMappings.ToDto(created));
+        if (!result.IsSuccess)
+            return HandleFailure(result);
+
+        // CreatedAtAction sets the 201 status and builds the Location header
+        // pointing to the GetById route for the newly created project.
+        return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProjectDto dto)
     {
-        // Map DTO → entity here. Repository receives a clean entity.
-        var project = new Project
-        {
-            ProjectId = id,
-            TenantId = _tenantContext.TenantId,
-            Name = dto.Name,
-            Description = dto.Description
-        };
+        var result = await _projectService.UpdateAsync(id, dto);
 
-        var updated = await _repository.UpdateAsync(project);
-        if (updated is null) return NotFound();
-        return Ok(ProjectMappings.ToDto(updated));
+        if (!result.IsSuccess)
+            return HandleFailure(result);
+
+        return Ok(result.Value);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await _repository.DeleteAsync(id, _tenantContext.TenantId);
-        if (!deleted) return NotFound();
+        var result = await _projectService.DeleteAsync(id);
+
+        if (!result.IsSuccess)
+            return HandleFailure(result);
+
+        // 204 No Content — success, but nothing to return.
         return NoContent();
     }
-
-    
 }

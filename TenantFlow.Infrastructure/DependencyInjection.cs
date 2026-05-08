@@ -28,6 +28,7 @@ public static class DependencyInjection
 
         // Register the concrete type as scoped first
         services.AddScoped<TenantContext>();
+        services.AddScoped<IProjectService, ProjectService>();
 
         // Both interfaces resolve to the same instance within a request
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
