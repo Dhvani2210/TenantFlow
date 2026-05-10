@@ -17,6 +17,17 @@ public class ProjectService : IProjectService
         _tenantContext = tenantContext;
     }
 
+    // The service is the only consumer of this logic, so it owns it.
+    private static ProjectDto MapToDto(Project p) => new()
+    {
+        Id = p.ProjectId,
+        Name = p.Name,
+        Description = p.Description,
+        IsActive = p.IsActive,
+        CreatedAt = p.CreatedAt,
+        UpdatedAt = p.UpdatedAt
+    };
+
     public async Task<Result<IEnumerable<ProjectDto>>> GetAllAsync()
     {
         try
@@ -125,16 +136,4 @@ public class ProjectService : IProjectService
         }
     }
 
-    // Mapping lives here — ProjectMappings.cs is deleted.
-    // The service is the only consumer of this logic, so it owns it.
-    private static ProjectDto MapToDto(Project p) => new()
-    {
-        Id = p.ProjectId,
-        TenantId = p.TenantId,
-        Name = p.Name,
-        Description = p.Description,
-        IsActive = p.IsActive,
-        CreatedAt = p.CreatedAt,
-        UpdatedAt = p.UpdatedAt
-    };
 }

@@ -25,6 +25,8 @@ public static class DependencyInjection
                 .EnableSensitiveDataLogging());
 
         services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<ITaskRepository, TaskRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         // Register the concrete type as scoped first
         services.AddScoped<TenantContext>();
@@ -33,6 +35,10 @@ public static class DependencyInjection
         // Both interfaces resolve to the same instance within a request
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
         services.AddScoped<ITenantContextSetter>(sp => sp.GetRequiredService<TenantContext>());
+
+        services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<ITaskService, TaskService>();
+        services.AddScoped<IUserService, UserService>();
 
         return services;
     }
