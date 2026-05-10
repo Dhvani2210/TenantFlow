@@ -1,0 +1,176 @@
+﻿using TenantFlow.Application.Common;
+using TenantFlow.Application.Common.Interfaces;
+using TenantFlow.Application.DTOs;
+using TenantFlow.Application.Interfaces;
+using TenantFlow.Domain.Entities;
+
+
+
+namespace TenantFlow.Infrastructure.Services
+{
+    public class TaskService : ITaskService
+    {
+        private readonly IProjectRepository _projectRepository;  
+        private readonly ITaskRepository _taskRepository;
+        private readonly ITenantContext _tenantContext;
+
+        public TaskService(IProjectRepository projectRepository, ITaskRepository taskRepository,
+                                    ITenantContext tenantContext)
+        {
+            _projectRepository = projectRepository;
+            _taskRepository = taskRepository;
+            _tenantContext = tenantContext;
+        }
+
+        private static TaskDto MapToDto(Domain.Entities.Task t) => new()
+        {
+            TaskId = t.TaskId,
+            ProjectId = t.ProjectId,
+            Name = t.Name,
+            Description = t.Description,
+            IsActive = t.IsActive,
+            CreatedAt = t.CreatedAt,
+            DueDate = t.DueDate,
+            AssignedToUserId = t.AssignedToUserId,
+            UpdatedAt = t.UpdatedAt
+        };
+
+        public async Task<Result<IEnumerable<TaskDto>>> GetAllAsync(Guid projectId)
+        {
+            try
+            {
+                var tasks = await _taskRepository.GetAllAsync(projectId);
+                return Result<IEnumerable<TaskDto>>.Success(tasks.Select(MapToDto));
+            }
+            catch (Exception ex)
+            {
+                return Result<IEnumerable<TaskDto>>.Failure(
+                    $"Failed to retrieve tasks: {ex.Message}",
+                    ErrorType.ServerError);
+            }
+        }
+
+        public async Task<Result<TaskDto>> GetByIdAsync(Guid id, Guid projectId)
+        {
+            try
+            {
+                var project = await _projectRepository.GetByIdAsync(projectId);
+
+                if (project is null)
+                    return Result<TaskDto>.Failure(
+                        "Project not found.",
+                        ErrorType.NotFound);
+                var task = await _taskRepository.GetByIdAsync(id, projectId);
+                if (task is null)
+                    return Result<TaskDto>.Failure(
+                       "Task not found.",
+                       ErrorType.NotFound);
+
+                return Result<TaskDto>.Success(MapToDto(task));
+            }
+            catch (Exception ex)
+            {
+                return Result<TaskDto>.Failure(
+                    $"Failed to retrieve task: {ex.Message}",
+                    ErrorType.ServerError);
+            }
+        }
+
+        public async Task<Result<TaskDto>> CreateAsync(Guid projectId, CreateTaskDto dto)
+        {
+            try
+            {
+                var project = await _projectRepository.GetByIdAsync(projectId);
+
+                if (project is null)
+                    return Result<TaskDto>.Failure(
+                       "Project not found.",
+                       ErrorType.NotFound);
+
+                    var task = new Domain.Entities.Task
+                    {
+                        TaskId = Guid.NewGuid(),
+                        ProjectId = projectId,
+                        Name = dto.Name,
+                        Description = dto.Description,
+                        TenantId = _tenantContext.TenantId,
+                        CreatedAt = DateTime.UtcNow,
+                        IsActive = true,
+                        DueDate = dto.DueDate,
+                        AssignedToUserId = dto.AssignedToUserId
+
+                    };
+
+                    var created = await _taskRepository.CreateAsync(task);
+                    return Result<TaskDto>.Success(MapToDto(created));
+            }
+            catch (Exception ex)
+            {
+                return Result<TaskDto>.Failure(
+               $"Failed to create Task: {ex.Message}",
+               ErrorType.ServerError);
+            }
+        }
+
+        public async Task<Result<TaskDto>> UpdateAsync(Guid id, Guid projectId, UpdateTaskDto dto)
+        {
+            try
+            {
+                var existing = await _projectRepository.GetByIdAsync(projectId);
+                if(existing is null)
+                    return Result<TaskDto>.Failure(
+                      "Project not found.",
+                      ErrorType.NotFound);
+
+                var existingTask = await _taskRepository.GetByIdAsync(id, projectId);
+
+                if(existingTask is null)
+                    return Result<TaskDto>.Failure(
+                      "Task not found.",
+                      ErrorType.NotFound);
+
+                existingTask.Name = dto.Name;
+                existingTask.Description = dto.Description;
+                existingTask.DueDate = dto.DueDate;
+                existingTask.AssignedToUserId = dto.AssignedToUserId;
+                existingTask.UpdatedAt = DateTime.UtcNow;
+
+                var updatedTask = await _taskRepository.UpdateAsync(existingTask);
+                return Result<TaskDto>.Success(MapToDto(updatedTask!));
+
+            }
+            catch (Exception ex)
+            {
+                return Result<TaskDto>.Failure(
+                    $"Failed to update Task: {ex.Message}",
+                    ErrorType.ServerError);
+            }
+        }
+
+        public async Task<Result<bool>> DeleteAsync(Guid id, Guid projectId)
+        {
+            try
+            {
+                var project = await _projectRepository.GetByIdAsync(projectId);
+                if (project is null)
+                    return Result<bool>.Failure(
+                        "Project not found.",
+                        ErrorType.NotFound);
+
+                var deleted = await _taskRepository.DeleteAsync(id, projectId);
+                if (!deleted)
+                    return Result<bool>.Failure(
+                        "Task not found.",
+                        ErrorType.NotFound);
+
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure(
+                    $"Failed to delete task: {ex.Message}",
+                    ErrorType.ServerError);
+            }
+        }
+    }
+}

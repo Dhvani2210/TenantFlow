@@ -1,0 +1,75 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using TenantFlow.Application.DTOs;
+using TenantFlow.Application.Interfaces;
+
+namespace TenantFlow.Api.Controllers
+{
+    [Authorize]
+    [ApiController]
+    [Route("api/users")]
+    public class UsersController : ApiBaseController
+    {
+        private readonly IUserService _userService;
+
+        public UsersController(IUserService userService)
+        {
+            _userService = userService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _userService.GetAllAsync();
+            if (!result.IsSuccess)
+                return HandleFailure(result);
+
+            return Ok(result.Value);
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var result = await _userService.GetByIdAsync(id);
+
+            if (!result.IsSuccess)
+                return HandleFailure(result);
+
+            return Ok(result.Value);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateUserDto dto)
+        {
+            var result = await _userService.CreateAsync(dto);
+
+            if (!result.IsSuccess)
+                return HandleFailure(result);
+
+            return CreatedAtAction(nameof(GetById), new { id = result.Value!.UserId }, result.Value);
+        }
+
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserDto dto)
+        {
+            var result = await _userService.UpdateAsync(id, dto);
+
+            if (!result.IsSuccess)
+                return HandleFailure(result);
+
+            return Ok(result.Value);
+        }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var result = await _userService.DeleteAsync(id);
+
+            if (!result.IsSuccess)
+                return HandleFailure(result);
+
+            return NoContent();
+        }
+
+    }
+}
