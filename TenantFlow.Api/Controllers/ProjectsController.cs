@@ -17,6 +17,7 @@ public class ProjectsController : ApiBaseController
         _projectService = projectService;
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -30,6 +31,8 @@ public class ProjectsController : ApiBaseController
         return Ok(result.Value);
     }
 
+
+    [Authorize]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
@@ -41,6 +44,8 @@ public class ProjectsController : ApiBaseController
         return Ok(result.Value);
     }
 
+
+    [Authorize(Policy = "RequireAdmin")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProjectDto dto)
     {
@@ -54,6 +59,8 @@ public class ProjectsController : ApiBaseController
         return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
     }
 
+
+    [Authorize(Policy = "RequireManager")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProjectDto dto)
     {
@@ -65,6 +72,7 @@ public class ProjectsController : ApiBaseController
         return Ok(result.Value);
     }
 
+    [Authorize(Policy = "RequireAdmin")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {

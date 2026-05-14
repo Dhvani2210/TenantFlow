@@ -17,6 +17,7 @@ namespace TenantFlow.Api.Controllers
             _userService = userService;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -27,6 +28,7 @@ namespace TenantFlow.Api.Controllers
             return Ok(result.Value);
         }
 
+        [Authorize]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -38,6 +40,7 @@ namespace TenantFlow.Api.Controllers
             return Ok(result.Value);
         }
 
+        [Authorize(Policy = "RequireAdmin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserDto dto)
         {
@@ -49,6 +52,7 @@ namespace TenantFlow.Api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Value!.UserId }, result.Value);
         }
 
+        [Authorize(Policy = "RequireAdmin")]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserDto dto)
         {
@@ -60,6 +64,7 @@ namespace TenantFlow.Api.Controllers
             return Ok(result.Value);
         }
 
+        [Authorize(Policy = "RequireAdmin")]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {

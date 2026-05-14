@@ -1,4 +1,5 @@
-﻿using TenantFlow.Application.Common;
+﻿using FluentValidation;
+using TenantFlow.Application.Common;
 using TenantFlow.Application.Common.Interfaces;
 using TenantFlow.Application.DTOs;
 using TenantFlow.Application.Interfaces;
@@ -10,11 +11,14 @@ public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly IValidator<CreateProjectDto> _validator;
 
-    public ProjectService(IProjectRepository repository, ITenantContext tenantContext)
+    public ProjectService(IProjectRepository repository, ITenantContext tenantContext,
+             IValidator<CreateProjectDto> validator)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _validator = validator;
     }
 
     // The service is the only consumer of this logic, so it owns it.
@@ -68,6 +72,14 @@ public class ProjectService : IProjectService
     {
         try
         {
+            var validationResult = await _validator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                return Result<ProjectDto>.Failure(errors, ErrorType.Validation);
+            }
+
             var project = new Project
             {
                 ProjectId = Guid.NewGuid(),

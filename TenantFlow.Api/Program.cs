@@ -4,16 +4,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using TenantFlow.Api.Middleware;
-using TenantFlow.Application.Interfaces;
+using TenantFlow.Application;
 using TenantFlow.Infrastructure;
-using TenantFlow.Infrastructure.Repositories;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
@@ -33,9 +34,38 @@ builder.Services.AddAuthentication("Bearer")
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
-            ValidateLifetime = true
+            ValidateLifetime = true,
+            RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            //OnTokenValidated = context =>
+            //{
+            //    var claims = context.Principal?.Claims
+            //        .Select(c => $"{c.Type} = {c.Value}");
+            //    Console.WriteLine("Claims: " + string.Join(", ", claims ?? []));
+            //    return Task.CompletedTask;
+            //}
+        };
+        
     });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdmin", policy =>
+        policy.RequireRole("Admin"));
+
+    options.AddPolicy("RequireManager", policy =>
+        policy.RequireRole("Manager", "Admin"));
+
+    options.AddPolicy("RequireDeveloper", policy =>
+        policy.RequireRole("Developer", "Manager", "Admin"));
+});
 
 var app = builder.Build();
 
@@ -46,6 +76,7 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 app.UseAuthentication();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();

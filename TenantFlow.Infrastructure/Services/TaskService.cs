@@ -1,4 +1,5 @@
-﻿using TenantFlow.Application.Common;
+﻿using FluentValidation;
+using TenantFlow.Application.Common;
 using TenantFlow.Application.Common.Interfaces;
 using TenantFlow.Application.DTOs;
 using TenantFlow.Application.Interfaces;
@@ -13,13 +14,16 @@ namespace TenantFlow.Infrastructure.Services
         private readonly IProjectRepository _projectRepository;  
         private readonly ITaskRepository _taskRepository;
         private readonly ITenantContext _tenantContext;
+        private readonly IValidator<CreateTaskDto> _validator;
+
 
         public TaskService(IProjectRepository projectRepository, ITaskRepository taskRepository,
-                                    ITenantContext tenantContext)
+                                    ITenantContext tenantContext, IValidator<CreateTaskDto> validator)
         {
             _projectRepository = projectRepository;
             _taskRepository = taskRepository;
             _tenantContext = tenantContext;
+            _validator = validator;
         }
 
         private static TaskDto MapToDto(Domain.Entities.Task t) => new()
@@ -87,7 +91,14 @@ namespace TenantFlow.Infrastructure.Services
                        "Project not found.",
                        ErrorType.NotFound);
 
-                    var task = new Domain.Entities.Task
+                var validationResult = await _validator.ValidateAsync(dto);
+                if (!validationResult.IsValid)
+                {
+                    var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                    return Result<TaskDto>.Failure(errors, ErrorType.Validation);
+                }
+
+                var task = new Domain.Entities.Task
                     {
                         TaskId = Guid.NewGuid(),
                         ProjectId = projectId,

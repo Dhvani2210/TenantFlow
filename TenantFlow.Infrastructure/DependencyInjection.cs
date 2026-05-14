@@ -15,7 +15,7 @@ public static class DependencyInjection
     // 'this IServiceCollection services' is what makes this an extension method.
     // The 'this' keyword means you can call it as services.AddInfrastructure(...)
     // instead of DependencyInjection.AddInfrastructure(services, ...)
-    public static IServiceCollection AddInfrastructure(
+    public static IServiceCollection AddInfrastructureServices(
         this IServiceCollection services,
         IConfiguration configuration)
     {
