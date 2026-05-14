@@ -1,10 +1,12 @@
 ﻿
+using BCrypt.Net;
+using FluentValidation;
+using TenantFlow.Application.Common;
 using TenantFlow.Application.Common.Interfaces;
 using TenantFlow.Application.DTOs;
 using TenantFlow.Application.Interfaces;
 using TenantFlow.Domain.Entities;
-using TenantFlow.Application.Common;
-using BCrypt.Net;
+using TenantFlow.Domain.Enums;
 
 
 namespace TenantFlow.Infrastructure.Services
@@ -13,11 +15,14 @@ namespace TenantFlow.Infrastructure.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly ITenantContext _tenantContext;
+        private readonly IValidator<CreateUserDto> _validator;
 
-        public UserService(IUserRepository userRepository, ITenantContext tenantContext)
+        public UserService(IUserRepository userRepository, ITenantContext tenantContext, 
+                                IValidator<CreateUserDto> validator)
         {
             _userRepository = userRepository;
             _tenantContext = tenantContext;
+            _validator = validator;
         }
 
         private static UserDto MapToDto(User u) => new()
@@ -25,7 +30,7 @@ namespace TenantFlow.Infrastructure.Services
             UserId = u.UserId,
             Email = u.Email,
             FullName = u.FullName,
-            Role = u.Role,
+            Role = u.Role.ToString(),
             IsActive = u.IsActive,
             CreatedAt = u.CreatedAt
         };
@@ -70,6 +75,20 @@ namespace TenantFlow.Infrastructure.Services
         {
             try
             {
+                // Validate first — before any business logic or database calls.
+                // ValidateAsync runs all rules defined in CreateUserDtoValidator.
+                var validationResult = await _validator.ValidateAsync(dto);
+
+                if (!validationResult.IsValid)
+                {
+                    // Extract all error messages into a single joined string.
+                    // ValidationResult.Errors is a list of ValidationFailure objects,
+                    // each with a property name and error message.
+                    var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                    return Result<UserDto>.Failure(errors, ErrorType.Validation);
+                }
+
+
                 var emailExists = await _userRepository.GetByEmailAsync(dto.Email);
                 if(emailExists is not null)
                     return Result<UserDto>.Failure(
@@ -80,7 +99,7 @@ namespace TenantFlow.Infrastructure.Services
                 {
                     UserId = Guid.NewGuid(),
                     FullName = dto.FullName,
-                    Role = dto.Role,
+                    Role = Enum.Parse<Role>(dto.Role, ignoreCase: true),
                     Email = dto.Email,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                     TenantId = _tenantContext.TenantId,

@@ -23,7 +23,6 @@ public class CreateTaskDto
     public string Name { get; init; } = string.Empty;
     public string? Description { get; init; }
     public DateTime? DueDate { get; init; }
-    public Guid ProjectId { get; init; }
     public Guid? AssignedToUserId { get; init; }
 }
 

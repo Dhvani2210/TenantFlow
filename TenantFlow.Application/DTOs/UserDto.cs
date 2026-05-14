@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace TenantFlow.Application.DTOs;
+﻿namespace TenantFlow.Application.DTOs;
 
 // Response DTO for a user record scoped to the current tenant.
 // PasswordHash is deliberately excluded — it must never leave the server.
@@ -21,14 +19,8 @@ public class UserDto
 // PasswordHash is NOT here — the service will hash the raw password before storing.
 public class CreateUserDto
 {
-    [Required]
-    [EmailAddress]
     public string Email { get; init; } = string.Empty;
-    [Required]
     public string FullName { get; init; } = string.Empty;
-
-    [Required]
-    [MinLength(6)]
     public string Password { get; init; } = string.Empty;
     public string Role { get; init; } = string.Empty;
 }

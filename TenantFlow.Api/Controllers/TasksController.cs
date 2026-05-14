@@ -17,6 +17,8 @@ namespace TenantFlow.Api.Controllers
             _taskService = taskService;
         }
 
+
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAll(Guid projectId)
         {
@@ -27,6 +29,7 @@ namespace TenantFlow.Api.Controllers
             return Ok(result.Value);
         }
 
+        [Authorize]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id, Guid projectId)
         {
@@ -38,6 +41,7 @@ namespace TenantFlow.Api.Controllers
             return Ok(result.Value);
         }
 
+        [Authorize(Policy = "RequireManager")]
         [HttpPost]
         public async Task<IActionResult> Create( Guid projectId, [FromBody] CreateTaskDto dto)
         {
@@ -49,6 +53,7 @@ namespace TenantFlow.Api.Controllers
             return CreatedAtAction(nameof(GetById), new { projectId, id = result.Value!.TaskId }, result.Value);
         }
 
+        [Authorize(Policy = "RequireManager")]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id,Guid projectId,  [FromBody] UpdateTaskDto dto)
         {
@@ -60,6 +65,7 @@ namespace TenantFlow.Api.Controllers
             return Ok(result.Value);
         }
 
+        [Authorize(Policy = "RequireManager")]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, Guid projectId)
         {
