@@ -70,4 +70,11 @@ public class UserRepository : IUserRepository
         return await _context.Users
             .FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
     }
+
+    public async Task<User?> GetByEmailForAuthAsync(string email)
+    {
+        return await _context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+    }
 }

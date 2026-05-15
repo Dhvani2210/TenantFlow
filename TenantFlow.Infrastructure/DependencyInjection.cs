@@ -40,6 +40,8 @@ public static class DependencyInjection
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<IUserService, UserService>();
 
+        services.AddScoped<IAuthService, AuthService>();
+
         return services;
     }
 }
