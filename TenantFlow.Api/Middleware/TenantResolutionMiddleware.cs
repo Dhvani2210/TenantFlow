@@ -37,12 +37,12 @@ public class TenantResolutionMiddleware
         // We just need to find the TenantId claim by its name.
         var tenantIdClaim = context.User.FindFirst("TenantId");
 
+        // if there's no tenantId claim, just call _next and continue.
+        // Let the endpoint's own [AllowAnonymous] or [Authorize] attribute handle authorization.
+        // The middleware's only job is tenant resolution — not access control.
         if (tenantIdClaim is null || !Guid.TryParse(tenantIdClaim.Value, out var tenantId))
         {
-            // No TenantId claim means either no token, an invalid token,
-            // or a token that was issued without tenant context.
-            // All three cases are unauthorized — return 401 and stop the pipeline.
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await _next(context);
             return;
         }
 
