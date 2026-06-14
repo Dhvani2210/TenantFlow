@@ -1,4 +1,5 @@
-﻿namespace TenantFlow.Domain.Entities;
+﻿using TaskStatus = TenantFlow.Domain.Enums.TaskStatus;
+namespace TenantFlow.Domain.Entities;
 
 public class Task
 {
@@ -16,4 +17,5 @@ public class Task
 
     public Project Project { get; set; } = null!;
     public User? AssignedTo { get; set; }
+    public TaskStatus Status { get; set; } = TaskStatus.Todo;
 }

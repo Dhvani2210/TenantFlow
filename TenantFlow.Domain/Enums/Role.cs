@@ -6,3 +6,9 @@ public enum Role
     Manager,
     Developer
 }
+public enum TaskStatus
+{
+    Todo,
+    InProgress,
+    Done
+}

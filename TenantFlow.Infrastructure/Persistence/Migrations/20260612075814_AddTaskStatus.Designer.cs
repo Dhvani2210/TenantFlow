@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TenantFlow.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using TenantFlow.Infrastructure.Persistence;
 namespace TenantFlow.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TenantFlowDbContext))]
-    partial class TenantFlowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260612075814_AddTaskStatus")]
+    partial class AddTaskStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
