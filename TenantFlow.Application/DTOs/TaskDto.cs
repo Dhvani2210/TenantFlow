@@ -13,6 +13,7 @@ public class TaskDto
     public Guid? AssignedToUserId { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
+    public string Status { get; init; } = "Todo";
 }
 
 // Inbound DTO for creating a task. ProjectId is here because the caller
@@ -36,4 +37,5 @@ public class UpdateTaskDto
     public string? Description { get; init; }
     public DateTime? DueDate { get; init; }
     public Guid? AssignedToUserId { get; init; }
+    public required string Status { get; init; }
 }

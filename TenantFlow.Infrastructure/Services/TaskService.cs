@@ -1,9 +1,12 @@
 ﻿using FluentValidation;
+using System.Threading.Tasks;
 using TenantFlow.Application.Common;
 using TenantFlow.Application.Common.Interfaces;
 using TenantFlow.Application.DTOs;
 using TenantFlow.Application.Interfaces;
 using TenantFlow.Domain.Entities;
+using TenantFlow.Domain.Enums;
+using TaskStatus = TenantFlow.Domain.Enums.TaskStatus;
 
 
 
@@ -36,7 +39,8 @@ namespace TenantFlow.Infrastructure.Services
             CreatedAt = t.CreatedAt,
             DueDate = t.DueDate,
             AssignedToUserId = t.AssignedToUserId,
-            UpdatedAt = t.UpdatedAt
+            UpdatedAt = t.UpdatedAt,
+            Status = t.Status.ToString()
         };
 
         public async Task<Result<IEnumerable<TaskDto>>> GetAllAsync(Guid projectId)
@@ -108,7 +112,8 @@ namespace TenantFlow.Infrastructure.Services
                         CreatedAt = DateTime.UtcNow,
                         IsActive = true,
                         DueDate = dto.DueDate,
-                        AssignedToUserId = dto.AssignedToUserId
+                        AssignedToUserId = dto.AssignedToUserId,
+                        Status = TaskStatus.Todo
 
                     };
 
@@ -145,6 +150,7 @@ namespace TenantFlow.Infrastructure.Services
                 existingTask.DueDate = dto.DueDate;
                 existingTask.AssignedToUserId = dto.AssignedToUserId;
                 existingTask.UpdatedAt = DateTime.UtcNow;
+                existingTask.Status = Enum.Parse<TaskStatus>(dto.Status);
 
                 var updatedTask = await _taskRepository.UpdateAsync(existingTask);
                 return Result<TaskDto>.Success(MapToDto(updatedTask!));

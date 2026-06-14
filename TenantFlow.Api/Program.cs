@@ -12,6 +12,8 @@ using TenantFlow.Infrastructure;
 
 
 var builder = WebApplication.CreateBuilder(args);
+//Console.WriteLine(BCrypt.Net.BCrypt.HashPassword("Sarah@123"));
+//Environment.Exit(0);
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
@@ -67,6 +69,17 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("Developer", "Manager", "Admin"));
 });
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -77,6 +90,7 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();

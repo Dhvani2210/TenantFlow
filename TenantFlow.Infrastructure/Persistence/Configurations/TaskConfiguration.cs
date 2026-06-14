@@ -55,5 +55,8 @@ public class TaskConfiguration : IEntityTypeConfiguration<Domain.Entities.Task>
             .WithMany()                          // Tenant has no Tasks collection navigation
             .HasForeignKey(t => t.TenantId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(t => t.Status)
+            .HasConversion<string>();
     }
 }
