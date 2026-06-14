@@ -1,13 +1,9 @@
 ﻿using FluentValidation;
-using System.Threading.Tasks;
 using TenantFlow.Application.Common;
 using TenantFlow.Application.Common.Interfaces;
 using TenantFlow.Application.DTOs;
 using TenantFlow.Application.Interfaces;
-using TenantFlow.Domain.Entities;
-using TenantFlow.Domain.Enums;
 using TaskStatus = TenantFlow.Domain.Enums.TaskStatus;
-
 
 
 namespace TenantFlow.Infrastructure.Services
@@ -18,15 +14,17 @@ namespace TenantFlow.Infrastructure.Services
         private readonly ITaskRepository _taskRepository;
         private readonly ITenantContext _tenantContext;
         private readonly IValidator<CreateTaskDto> _validator;
+        private readonly IHubNotificationService _hubNotificationService;
 
 
         public TaskService(IProjectRepository projectRepository, ITaskRepository taskRepository,
-                                    ITenantContext tenantContext, IValidator<CreateTaskDto> validator)
+                ITenantContext tenantContext, IValidator<CreateTaskDto> validator, IHubNotificationService hubNotificationService)
         {
             _projectRepository = projectRepository;
             _taskRepository = taskRepository;
             _tenantContext = tenantContext;
             _validator = validator;
+            _hubNotificationService = hubNotificationService;
         }
 
         private static TaskDto MapToDto(Domain.Entities.Task t) => new()
@@ -118,7 +116,9 @@ namespace TenantFlow.Infrastructure.Services
                     };
 
                     var created = await _taskRepository.CreateAsync(task);
-                    return Result<TaskDto>.Success(MapToDto(created));
+                    var taskDto = MapToDto(created);
+                    await _hubNotificationService.NotifyTaskCreated(_tenantContext.TenantId.ToString(), taskDto);
+                    return Result<TaskDto>.Success(taskDto);
             }
             catch (Exception ex)
             {
@@ -153,7 +153,9 @@ namespace TenantFlow.Infrastructure.Services
                 existingTask.Status = Enum.Parse<TaskStatus>(dto.Status);
 
                 var updatedTask = await _taskRepository.UpdateAsync(existingTask);
-                return Result<TaskDto>.Success(MapToDto(updatedTask!));
+                var taskDto = MapToDto(updatedTask!);
+                await _hubNotificationService.NotifyTaskUpdated(_tenantContext.TenantId.ToString(), taskDto);
+                return Result<TaskDto>.Success(taskDto);
 
             }
             catch (Exception ex)
@@ -180,6 +182,7 @@ namespace TenantFlow.Infrastructure.Services
                         "Task not found.",
                         ErrorType.NotFound);
 
+                await _hubNotificationService.NotifyTaskDeleted(_tenantContext.TenantId.ToString(), id);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)

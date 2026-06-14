@@ -6,8 +6,10 @@ using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using TenantFlow.Api.Hubs;
 using TenantFlow.Api.Middleware;
 using TenantFlow.Application;
+using TenantFlow.Application.Interfaces;
 using TenantFlow.Infrastructure;
 
 
@@ -80,6 +82,9 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddSignalR();
+builder.Services.AddScoped<IHubNotificationService, HubNotificationService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -94,6 +99,7 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();
+app.MapHub<TaskHub>("/hubs/tasks");
 app.MapControllers();
 app.Run();
 
