@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using TenantFlow.Application.DTOs;
 using TenantFlow.Application.Interfaces;
 
@@ -84,6 +86,17 @@ namespace TenantFlow.Api.Controllers
             if (!result.IsSuccess)
                 return HandleFailure(result);
             return Ok(result.Value);
+        }
+
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+            {
+
+            //var claims = User.Claims.Select(c => new { c.Type, c.Value });
+            //return Ok(claims);
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _userService.ChangePasswordAsync(userId, dto);
+            return result.IsSuccess ? NoContent() : HandleFailure(result);
         }
     }
 }

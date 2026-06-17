@@ -14,6 +14,7 @@ public class TaskDto
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
     public string Status { get; init; } = "Todo";
+    public string? AssignedToUserName { get; set; }
 }
 
 // Inbound DTO for creating a task. ProjectId is here because the caller
