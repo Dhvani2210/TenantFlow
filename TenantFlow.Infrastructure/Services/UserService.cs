@@ -164,5 +164,32 @@ namespace TenantFlow.Infrastructure.Services
                     ErrorType.ServerError);
             }
         }
+
+        public async Task<Result<InviteMemberResponseDto>> InviteMemberAsync(InviteMemberDto dto)
+        {
+            var temporaryPassword = Guid.NewGuid().ToString("N")[..8];
+
+            var createDto = new CreateUserDto
+            {
+                Email = dto.Email,
+                FullName = dto.FullName,
+                Role = dto.Role,
+                Password = temporaryPassword
+            };
+
+            var result = await CreateAsync(createDto);
+
+            if (!result.IsSuccess)
+                return Result<InviteMemberResponseDto>.Failure(result.Error, result.ErrorType);
+
+            return Result<InviteMemberResponseDto>.Success(new InviteMemberResponseDto
+            {
+                UserId = result.Value!.UserId,
+                Email = result.Value.Email,
+                FullName = result.Value.FullName,
+                Role = result.Value.Role,
+                TemporaryPassword = temporaryPassword
+            });
+        }
     }
 }
