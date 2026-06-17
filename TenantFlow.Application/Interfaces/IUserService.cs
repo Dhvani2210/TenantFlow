@@ -10,4 +10,5 @@ public interface IUserService
     Task<Result<UserDto>> CreateAsync(CreateUserDto dto);
     Task<Result<UserDto>> UpdateAsync(Guid id, UpdateUserDto dto);
     Task<Result<bool>> DeleteAsync(Guid id);
+    Task<Result<InviteMemberResponseDto>> InviteMemberAsync(InviteMemberDto dto);
 }

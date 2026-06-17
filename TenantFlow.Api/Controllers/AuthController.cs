@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TenantFlow.Application.Common.Interfaces;
 using TenantFlow.Application.DTOs;
 using TenantFlow.Application.Interfaces;
 
@@ -22,6 +21,14 @@ public class AuthController : ApiBaseController
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
         var result = await _authService.LoginAsync(dto);
+        return HandleFailure(result);
+    }
+
+    [HttpPost("register-tenant")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RegisterTenant([FromBody] RegisterTenantDto dto)
+    {
+        var result = await _authService.RegisterTenantAsync(dto);
         return HandleFailure(result);
     }
 }

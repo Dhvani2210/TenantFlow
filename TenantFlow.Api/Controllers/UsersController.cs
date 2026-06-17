@@ -76,5 +76,14 @@ namespace TenantFlow.Api.Controllers
             return NoContent();
         }
 
+        [Authorize(Policy = "RequireAdmin")]
+        [HttpPost("invite")]
+        public async Task<IActionResult> InviteMember([FromBody] InviteMemberDto dto)
+        {
+            var result = await _userService.InviteMemberAsync(dto);
+            if (!result.IsSuccess)
+                return HandleFailure(result);
+            return Ok(result.Value);
+        }
     }
 }

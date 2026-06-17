@@ -48,15 +48,24 @@ builder.Services.AddAuthentication("Bearer")
                 Console.WriteLine($"Authentication failed: {context.Exception.Message}");
                 return Task.CompletedTask;
             },
-            //OnTokenValidated = context =>
-            //{
-            //    var claims = context.Principal?.Claims
-            //        .Select(c => $"{c.Type} = {c.Value}");
-            //    Console.WriteLine("Claims: " + string.Join(", ", claims ?? []));
-            //    return Task.CompletedTask;
-            //}
+
+             OnMessageReceived = context =>
+             {
+                 var accessToken = context.Request.Query["access_token"];
+                 var path = context.HttpContext.Request.Path;
+
+                 if (!string.IsNullOrEmpty(accessToken) &&
+                     path.StartsWithSegments("/hubs"))
+                 {
+                     context.Token = accessToken;
+                 }
+
+                 return Task.CompletedTask;
+             }
         };
-        
+
+
+
     });
 
 builder.Services.AddAuthorization(options =>
@@ -78,7 +87,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
