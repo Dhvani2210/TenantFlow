@@ -191,5 +191,29 @@ namespace TenantFlow.Infrastructure.Services
                 TemporaryPassword = temporaryPassword
             });
         }
+
+        public async Task<Result<bool>> ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
+        {
+            try
+            {
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user is null)
+                    return Result<bool>.Failure("User not found.", ErrorType.NotFound);
+
+                if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+                    return Result<bool>.Failure("Current password is incorrect.", ErrorType.Unauthorized);
+
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+                await _userRepository.UpdateAsync(user);
+
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure(
+                    $"Failed to change password: {ex.Message}",
+                    ErrorType.ServerError);
+            }
+        }
     }
 }

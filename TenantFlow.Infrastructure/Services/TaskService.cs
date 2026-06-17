@@ -37,6 +37,7 @@ namespace TenantFlow.Infrastructure.Services
             CreatedAt = t.CreatedAt,
             DueDate = t.DueDate,
             AssignedToUserId = t.AssignedToUserId,
+            AssignedToUserName = t.AssignedTo?.FullName,
             UpdatedAt = t.UpdatedAt,
             Status = t.Status.ToString()
         };

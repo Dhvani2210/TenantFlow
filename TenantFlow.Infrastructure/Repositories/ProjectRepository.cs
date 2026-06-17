@@ -63,6 +63,13 @@ public class ProjectRepository : IProjectRepository
 
         existing.IsActive = false;
         existing.UpdatedAt = DateTime.UtcNow;
+
+        var tasks = await _context.Tasks
+        .Where(t => t.ProjectId == id && t.IsActive)
+        .ToListAsync();
+        foreach (var task in tasks)
+            task.IsActive = false;
+
         await _context.SaveChangesAsync();
         return true;
     }

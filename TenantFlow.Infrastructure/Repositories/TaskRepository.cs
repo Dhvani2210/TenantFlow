@@ -20,6 +20,7 @@ public class TaskRepository : ITaskRepository
         // We additionally scope by projectId — this is a business filter, not a
         // security one. Only active tasks are returned.
         return await _context.Tasks
+            .Include(t => t.AssignedTo)
             .Where(t => t.ProjectId == projectId && t.IsActive)
             .ToListAsync();
     }
@@ -27,6 +28,7 @@ public class TaskRepository : ITaskRepository
     public async Task<Domain.Entities.Task?> GetByIdAsync(Guid id, Guid projectId)
     {
         return await _context.Tasks
+            .Include(t => t.AssignedTo)
             .FirstOrDefaultAsync(t => t.TaskId == id && t.ProjectId == projectId && t.IsActive);
     }
 
