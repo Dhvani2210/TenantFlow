@@ -19,7 +19,8 @@ public class ProjectRepository : IProjectRepository
         // No TenantId filter needed here.
         // The global query filter in TenantFlowDbContext automatically appends
         // WHERE TenantId = <current tenant> to every query on this entity.
-        return await _context.Projects.ToListAsync();
+        return await _context.Projects
+            .Where(p => p.IsActive).ToListAsync();
     }
 
     public async Task<Project?> GetByIdAsync(Guid id)
