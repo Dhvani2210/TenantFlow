@@ -11,6 +11,7 @@ using TenantFlow.Api.Middleware;
 using TenantFlow.Application;
 using TenantFlow.Application.Interfaces;
 using TenantFlow.Infrastructure;
+using TenantFlow.Infrastructure.Persistence;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -81,11 +82,13 @@ builder.Services.AddAuthorization(options =>
 });
 
 
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -96,6 +99,12 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<IHubNotificationService, HubNotificationService>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<TenantFlowDbContext>();
+    dbContext.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment())
 {
