@@ -1,0 +1,48 @@
+# Name shown in the GitHub Actions tab — purely cosmetic, no functional effect.
+name: Backend CI
+
+# WHEN this workflow runs.
+# pull_request -> catches broken code BEFORE it merges into main.
+# push to main -> confirms main itself stays healthy after merge.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    # Requests a fresh, clean Linux VM from GitHub. Destroyed after this run finishes.
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: the VM starts empty -- this clones our repo's code onto it.
+      # Without this, every command below would have nothing to act on.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: installs the .NET SDK on the VM.
+      # 9.0.x pins the major version (matches our net9.0 projects) while
+      # floating on patch versions (safe bug/security fixes only).
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      # Step 3: downloads all NuGet package dependencies declared in the solution.
+      # Kept separate from build (rather than letting build auto-restore) so that
+      # a dependency-resolution failure is immediately distinguishable in the logs
+      # from an actual compile error.
+      - name: Restore dependencies
+        run: dotnet restore TenantFlow.sln
+
+      # Step 4: compiles the solution.
+      # --no-restore skips re-running restore, since we just did it above --
+      # avoids redundant work.
+      - name: Build
+        run: dotnet build TenantFlow.sln --no-restore --configuration Release
+
+      # Step 5: runs all xUnit tests in the solution (includes our 3 middleware tests).
+      # --no-build skips rebuilding, since we just built above.
+      - name: Test
+        run: dotnet test TenantFlow.sln --no-build --configuration Release
