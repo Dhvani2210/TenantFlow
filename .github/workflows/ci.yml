@@ -46,3 +46,11 @@ jobs:
       # --no-build skips rebuilding, since we just built above.
       - name: Test
         run: dotnet test TenantFlow.sln --no-build --configuration Release
+    
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t tenantflow-api:ci .
