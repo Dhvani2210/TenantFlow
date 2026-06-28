@@ -10,6 +10,12 @@ Database-per-tenant or schema-per-tenant would give stronger physical isolation,
 
 **Known limitation:** isolation is currently enforced at the application layer only (EF Core query filters), not reinforced with SQL Server Row-Level Security (RLS) policies at the database layer. A raw SQL query that bypasses EF Core could theoretically cross tenant boundaries. RLS as a defense-in-depth layer is a natural next hardening step — it wasn't in scope for the initial build, and is one of the first things I'd add before this went near production traffic.
 
+## Tech Stack
+
+**Backend**: ASP.NET Core 9, Entity Framework Core, SQL Server 2022, SignalR, JWT Authentication
+**Frontend**: React, TypeScript, Vite, Tailwind CSS
+**Infrastructure**: Docker, Docker Compose
+
 ## Architecture
 
 The diagram below traces a single request — creating a task — through every layer of the system, from the JWT on the client to the real-time update pushed back out to other connected users in the same tenant.
@@ -42,12 +48,6 @@ flowchart TD
 ```
 
 Tenant isolation is enforced at the EF Core layer (step 6), before any data reaches the database — and SignalR broadcasts (step 8) are scoped to the same tenant, so real-time updates never leak across tenant boundaries either.
-
-## Tech Stack
-
-**Backend**: ASP.NET Core 9, Entity Framework Core, SQL Server 2022, SignalR, JWT Authentication
-**Frontend**: React, TypeScript, Vite, Tailwind CSS
-**Infrastructure**: Docker, Docker Compose
 
 ## Running with Docker
 
