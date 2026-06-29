@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TenantFlow.Application.Common;
 using TenantFlow.Application.Interfaces;
-using TenantFlow.Infrastructure.Persistence;
 using TenantFlow.Domain.Entities;
+using TenantFlow.Infrastructure.Persistence;
 
 namespace TenantFlow.Infrastructure.Repositories;
 
@@ -14,16 +15,29 @@ public class TaskRepository : ITaskRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Domain.Entities.Task>> GetAllAsync(Guid projectId)
+    public async Task<PagedResult<Domain.Entities.Task>> GetAllAsync(Guid projectId, PaginationParams paginationParams)
     {
-        // Global query filter automatically appends WHERE TenantId = <current tenant>.
-        // We additionally scope by projectId — this is a business filter, not a
-        // security one. Only active tasks are returned.
-        return await _context.Tasks
+        var query = _context.Tasks
             .Include(t => t.AssignedTo)
-            .Where(t => t.ProjectId == projectId && t.IsActive)
+            .Where(t => t.ProjectId == projectId && t.IsActive);
+
+        var totalCount = await query.CountAsync();
+
+        var data = await query
+            .OrderBy(t => t.CreatedAt)
+            .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+            .Take(paginationParams.PageSize)
             .ToListAsync();
+
+        return new PagedResult<Domain.Entities.Task>
+        {
+            Data = data,
+            TotalCount = totalCount,
+            PageNumber = paginationParams.PageNumber,
+            PageSize = paginationParams.PageSize
+        };
     }
+
 
     public async Task<Domain.Entities.Task?> GetByIdAsync(Guid id, Guid projectId)
     {

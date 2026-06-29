@@ -3,12 +3,9 @@
 public class Project
 {
     public Guid ProjectId { get; init; }
-
-    // Foreign key property — holds the raw Guid value stored in the column
     public Guid TenantId { get; init; }
-
     public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }  // nullable — mirrors NULL allowed in SQL
+    public string? Description { get; set; }  
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; set; }

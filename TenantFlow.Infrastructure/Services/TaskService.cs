@@ -42,16 +42,25 @@ namespace TenantFlow.Infrastructure.Services
             Status = t.Status.ToString()
         };
 
-        public async Task<Result<IEnumerable<TaskDto>>> GetAllAsync(Guid projectId)
+        public async Task<Result<PagedResult<TaskDto>>> GetAllAsync(Guid projectId, PaginationParams paginationParams)
         {
             try
             {
-                var tasks = await _taskRepository.GetAllAsync(projectId);
-                return Result<IEnumerable<TaskDto>>.Success(tasks.Select(MapToDto));
+                var pagedTasks = await _taskRepository.GetAllAsync(projectId, paginationParams);
+
+                var pagedDto = new PagedResult<TaskDto>
+                {
+                    Data = pagedTasks.Data.Select(MapToDto),
+                    TotalCount = pagedTasks.TotalCount,
+                    PageNumber = pagedTasks.PageNumber,
+                    PageSize = pagedTasks.PageSize
+                };
+
+                return Result<PagedResult<TaskDto>>.Success(pagedDto);
             }
             catch (Exception ex)
             {
-                return Result<IEnumerable<TaskDto>>.Failure(
+                return Result<PagedResult<TaskDto>>.Failure(
                     $"Failed to retrieve tasks: {ex.Message}",
                     ErrorType.ServerError);
             }

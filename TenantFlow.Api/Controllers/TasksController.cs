@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TenantFlow.Application.Common;
 using TenantFlow.Application.DTOs;
 using TenantFlow.Application.Interfaces;
 
@@ -20,12 +21,11 @@ namespace TenantFlow.Api.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetAll(Guid projectId)
+        public async Task<IActionResult> GetAll(Guid projectId, [FromQuery] PaginationParams paginationParams)
         {
-            var result = await _taskService.GetAllAsync(projectId);
+            var result = await _taskService.GetAllAsync(projectId, paginationParams);
             if (!result.IsSuccess)
                 return HandleFailure(result);
-
             return Ok(result.Value);
         }
 

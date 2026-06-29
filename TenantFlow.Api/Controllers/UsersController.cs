@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using TenantFlow.Application.Common;
 using TenantFlow.Application.DTOs;
 using TenantFlow.Application.Interfaces;
 
@@ -21,12 +22,11 @@ namespace TenantFlow.Api.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
         {
-            var result = await _userService.GetAllAsync();
+            var result = await _userService.GetAllAsync(paginationParams);
             if (!result.IsSuccess)
                 return HandleFailure(result);
-
             return Ok(result.Value);
         }
 
