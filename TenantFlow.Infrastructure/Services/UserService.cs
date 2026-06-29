@@ -35,18 +35,27 @@ namespace TenantFlow.Infrastructure.Services
             CreatedAt = u.CreatedAt
         };
 
-        public async Task<Result<IEnumerable<UserDto>>> GetAllAsync()
+        public async Task<Result<PagedResult<UserDto>>> GetAllAsync(PaginationParams paginationParams)
         {
             try
             {
-                var users = await _userRepository.GetAllAsync();
-                return Result<IEnumerable<UserDto>>.Success(users.Select(MapToDto));
+                var pagedUsers = await _userRepository.GetAllAsync(paginationParams);
+
+                var pagedDto = new PagedResult<UserDto>
+                {
+                    Data = pagedUsers.Data.Select(MapToDto),
+                    TotalCount = pagedUsers.TotalCount,
+                    PageNumber = pagedUsers.PageNumber,
+                    PageSize = pagedUsers.PageSize
+                };
+
+                return Result<PagedResult<UserDto>>.Success(pagedDto);
             }
             catch (Exception ex)
             {
-                return Result<IEnumerable<UserDto>>.Failure(
-                $"Failed to retrieve Users: {ex.Message}",
-                ErrorType.ServerError);
+                return Result<PagedResult<UserDto>>.Failure(
+                    $"Failed to retrieve Users: {ex.Message}",
+                    ErrorType.ServerError);
             }
         }
 

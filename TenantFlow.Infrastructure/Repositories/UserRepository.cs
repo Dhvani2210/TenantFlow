@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TenantFlow.Application.Common;
 using TenantFlow.Application.Interfaces;
-using TenantFlow.Infrastructure.Persistence;
 using TenantFlow.Domain.Entities;
+using TenantFlow.Infrastructure.Persistence;
 
 namespace TenantFlow.Infrastructure.Repositories;
 
@@ -14,13 +15,25 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<User>> GetAllAsync()
+    public async Task<PagedResult<User>> GetAllAsync(PaginationParams paginationParams)
     {
-        // Global query filter scopes by TenantId automatically.
-        // Only active users are returned.
-        return await _context.Users
-            .Where(u => u.IsActive)
+        var query = _context.Users.Where(u => u.IsActive);
+
+        var totalCount = await query.CountAsync();
+
+        var data = await query
+            .OrderBy(u => u.CreatedAt)
+            .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+            .Take(paginationParams.PageSize)
             .ToListAsync();
+
+        return new PagedResult<User>
+        {
+            Data = data,
+            TotalCount = totalCount,
+            PageNumber = paginationParams.PageNumber,
+            PageSize = paginationParams.PageSize
+        };
     }
 
     public async Task<User?> GetByIdAsync(Guid id)

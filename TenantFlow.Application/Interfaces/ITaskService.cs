@@ -5,7 +5,7 @@ namespace TenantFlow.Application.Interfaces;
 
 public interface ITaskService
 {
-    Task<Result<IEnumerable<TaskDto>>> GetAllAsync(Guid projectId);
+    Task<Result<PagedResult<TaskDto>>> GetAllAsync(Guid projectId, PaginationParams paginationParams);
     Task<Result<TaskDto>> GetByIdAsync(Guid id, Guid projectId);
     Task<Result<TaskDto>> CreateAsync(Guid projectId, CreateTaskDto dto);
     Task<Result<TaskDto>> UpdateAsync(Guid id, Guid projectId, UpdateTaskDto dto);
