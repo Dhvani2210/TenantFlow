@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TenantFlow.Application.Common;
 using TenantFlow.Application.DTOs;
 using TenantFlow.Application.Interfaces;
 
@@ -19,15 +20,12 @@ public class ProjectsController : ApiBaseController
 
     [Authorize]
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
     {
-        var result = await _projectService.GetAllAsync();
+        var result = await _projectService.GetAllAsync(paginationParams);
 
-        // If something went wrong at the infrastructure level, HandleFailure
-        // maps the ErrorType to the right HTTP status code automatically.
         if (!result.IsSuccess)
             return HandleFailure(result);
-
         return Ok(result.Value);
     }
 

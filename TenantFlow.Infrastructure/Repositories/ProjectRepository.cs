@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TenantFlow.Infrastructure.Persistence;
-using TenantFlow.Domain.Entities;
+using TenantFlow.Application.Common;
 using TenantFlow.Application.Interfaces;
+using TenantFlow.Domain.Entities;
+using TenantFlow.Infrastructure.Persistence;
 
 namespace TenantFlow.Infrastructure.Repositories;
 
@@ -14,13 +15,29 @@ public class ProjectRepository : IProjectRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Project>> GetAllAsync()
+    public async Task<PagedResult<Project>> GetAllAsync(PaginationParams paginationParams)
     {
         // No TenantId filter needed here.
         // The global query filter in TenantFlowDbContext automatically appends
         // WHERE TenantId = <current tenant> to every query on this entity.
-        return await _context.Projects
-            .Where(p => p.IsActive).ToListAsync();
+
+        var query = _context.Projects.Where(p => p.IsActive);
+
+        var totalCount = await query.CountAsync();
+
+        var data = await query
+            .OrderBy(p => p.CreatedAt)
+            .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+            .Take(paginationParams.PageSize)
+            .ToListAsync();
+
+        return new PagedResult<Project>
+        {
+            Data = data,
+            TotalCount = totalCount,
+            PageNumber = paginationParams.PageNumber,
+            PageSize = paginationParams.PageSize
+        };
     }
 
     public async Task<Project?> GetByIdAsync(Guid id)

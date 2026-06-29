@@ -32,16 +32,25 @@ public class ProjectService : IProjectService
         UpdatedAt = p.UpdatedAt
     };
 
-    public async Task<Result<IEnumerable<ProjectDto>>> GetAllAsync()
+    public async Task<Result<PagedResult<ProjectDto>>> GetAllAsync(PaginationParams paginationParams)
     {
         try
         {
-            var projects = await _repository.GetAllAsync();
-            return Result<IEnumerable<ProjectDto>>.Success(projects.Select(MapToDto));
+            var pagedProjects = await _repository.GetAllAsync(paginationParams);
+
+            var pagedDto = new PagedResult<ProjectDto>
+            {
+                Data = pagedProjects.Data.Select(MapToDto),
+                TotalCount = pagedProjects.TotalCount,
+                PageNumber = pagedProjects.PageNumber,
+                PageSize = pagedProjects.PageSize
+            };
+
+            return Result<PagedResult<ProjectDto>>.Success(pagedDto);
         }
         catch (Exception ex)
         {
-            return Result<IEnumerable<ProjectDto>>.Failure(
+            return Result<PagedResult<ProjectDto>>.Failure(
                 $"Failed to retrieve projects: {ex.Message}",
                 ErrorType.ServerError);
         }
