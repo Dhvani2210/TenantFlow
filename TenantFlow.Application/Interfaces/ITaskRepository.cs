@@ -4,7 +4,7 @@ namespace TenantFlow.Application.Interfaces;
 
 public interface ITaskRepository
 {
-    Task<PagedResult<Domain.Entities.Task>> GetAllAsync(Guid projectId, PaginationParams paginationParams);
+    Task<PagedResult<Domain.Entities.Task>> GetAllAsync(Guid projectId, TaskQueryParams queryParams);
     Task<Domain.Entities.Task?> GetByIdAsync(Guid id, Guid projectId);
     Task<Domain.Entities.Task> CreateAsync(Domain.Entities.Task task);
     Task<Domain.Entities.Task?> UpdateAsync(Domain.Entities.Task task);

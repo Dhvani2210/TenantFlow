@@ -21,11 +21,13 @@ namespace TenantFlow.Api.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetAll(Guid projectId, [FromQuery] PaginationParams paginationParams)
+        public async Task<IActionResult> GetAll(Guid projectId, [FromQuery] TaskQueryParams queryParams)
         {
-            var result = await _taskService.GetAllAsync(projectId, paginationParams);
+            var result = await _taskService.GetAllAsync(projectId, queryParams);
             if (!result.IsSuccess)
+            {
                 return HandleFailure(result);
+            }
             return Ok(result.Value);
         }
 
