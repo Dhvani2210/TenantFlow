@@ -42,12 +42,11 @@ namespace TenantFlow.Infrastructure.Services
             Status = t.Status.ToString()
         };
 
-        public async Task<Result<PagedResult<TaskDto>>> GetAllAsync(Guid projectId, PaginationParams paginationParams)
+        public async Task<Result<PagedResult<TaskDto>>> GetAllAsync(Guid projectId, TaskQueryParams queryParams)
         {
             try
             {
-                var pagedTasks = await _taskRepository.GetAllAsync(projectId, paginationParams);
-
+                var pagedTasks = await _taskRepository.GetAllAsync(projectId, queryParams);
                 var pagedDto = new PagedResult<TaskDto>
                 {
                     Data = pagedTasks.Data.Select(MapToDto),
@@ -55,7 +54,6 @@ namespace TenantFlow.Infrastructure.Services
                     PageNumber = pagedTasks.PageNumber,
                     PageSize = pagedTasks.PageSize
                 };
-
                 return Result<PagedResult<TaskDto>>.Success(pagedDto);
             }
             catch (Exception ex)
