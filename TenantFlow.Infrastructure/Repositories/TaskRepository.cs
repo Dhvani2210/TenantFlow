@@ -68,6 +68,12 @@ public class TaskRepository : ITaskRepository
     {
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
+        if (task.AssignedToUserId.HasValue)
+        {
+            await _context.Entry(task)
+                .Reference(t => t.AssignedTo)
+                .LoadAsync();
+        }
         return task;
     }
 
