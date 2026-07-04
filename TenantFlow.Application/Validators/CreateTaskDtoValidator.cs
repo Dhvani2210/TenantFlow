@@ -15,7 +15,7 @@ public class CreateTaskDtoValidator : AbstractValidator<CreateTaskDto>
             .MaximumLength(500).WithMessage("Description must not exceed 500 characters.");
 
         RuleFor(x => x.DueDate)
-            .GreaterThan(_ => DateTime.Today)
+            .GreaterThan(_ => DateOnly.FromDateTime(DateTime.Today))
             .WithMessage("The due date must be in the future.");
 
     }

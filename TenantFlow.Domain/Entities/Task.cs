@@ -13,7 +13,7 @@ public class Task
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; set; }
-    public DateTime? DueDate { get; set; }
+    public DateOnly? DueDate { get; set; }
 
     public Project Project { get; set; } = null!;
     public User? AssignedTo { get; set; }
