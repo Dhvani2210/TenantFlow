@@ -19,7 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 //Environment.Exit(0);
 
 builder.Services.AddApplicationServices();
-builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddInfrastructureServices(builder.Configuration, builder.Environment);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
