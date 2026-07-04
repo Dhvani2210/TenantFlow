@@ -24,8 +24,8 @@ public class TaskRepository : ITaskRepository
         if (!string.IsNullOrWhiteSpace(queryParams.Search))
         {
             query = query.Where(t =>
-                t.Name.Contains(queryParams.Search) ||
-                t.Description.Contains(queryParams.Search));
+                    EF.Functions.ILike(t.Name, $"%{queryParams.Search}%") ||
+                    EF.Functions.ILike(t.Description!, $"%{queryParams.Search}%"));
         }
 
         if (queryParams.Status.HasValue)

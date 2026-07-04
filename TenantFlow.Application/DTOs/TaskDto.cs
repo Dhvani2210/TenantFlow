@@ -8,7 +8,7 @@ public class TaskDto
     public string Name { get; init; } = string.Empty;
     public string? Description { get; init; }
     public bool IsActive { get; init; } 
-    public DateTime? DueDate { get; init; }
+    public DateOnly? DueDate { get; init; }
     public Guid ProjectId { get; init; }
     public Guid? AssignedToUserId { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -24,7 +24,7 @@ public class CreateTaskDto
 {
     public string Name { get; init; } = string.Empty;
     public string? Description { get; init; }
-    public DateTime? DueDate { get; init; }
+    public DateOnly? DueDate { get; init; }
     public Guid? AssignedToUserId { get; init; }
 }
 
@@ -36,7 +36,7 @@ public class UpdateTaskDto
 {
     public string Name { get; init; } = string.Empty;
     public string? Description { get; init; }
-    public DateTime? DueDate { get; init; }
+    public DateOnly? DueDate { get; init; }
     public Guid? AssignedToUserId { get; init; }
     public required string Status { get; init; }
 }
