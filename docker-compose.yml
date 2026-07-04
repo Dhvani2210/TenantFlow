@@ -1,18 +1,23 @@
 services:
   db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: postgres:18-alpine
     environment:
-      SA_PASSWORD: "${SA_PASSWORD}"
-      ACCEPT_EULA: "Y"
-      MSSQL_MEMORY_LIMIT_MB: "2048"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
     ports:
-      - "1434:1433"
+      - "5432:5432"
     volumes:
-      - sqldata:/var/opt/mssql
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     deploy:
       resources:
         limits:
-          memory: 2g
+          memory: 512m
 
   api:
     build:
@@ -22,14 +27,14 @@ services:
       - "5253:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      SA_PASSWORD: "${SA_PASSWORD}"
-      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=TenantFlowDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       Jwt__Key: "${JWT_KEY}"
       Jwt__Issuer: "${JWT_ISSUER}"
       Jwt__Audience: "${JWT_AUDIENCE}"
       Cors__AllowedOrigins__0: "http://localhost:3000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
     build:
@@ -41,4 +46,4 @@ services:
       - api
 
 volumes:
-  sqldata:
+  pgdata:
