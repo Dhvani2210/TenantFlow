@@ -10,8 +10,8 @@ public class TenantFlowDbContextFactory : IDesignTimeDbContextFactory<TenantFlow
     {
         var optionsBuilder = new DbContextOptionsBuilder<TenantFlowDbContext>();
 
-        optionsBuilder.UseSqlServer(
-            "Server=LAPTOP-ITSG6C0Q\\Dhvni,1433;Database=TenantFlowDb;Trusted_Connection=True;TrustServerCertificate=True;");
+        optionsBuilder.UseNpgsql(
+            "Host=localhost;Port=5433;Database=TenantFlowDb;Username=postgres;Password=admin");
 
         return new TenantFlowDbContext(optionsBuilder.Options, new DesignTimeTenantContext());
     }

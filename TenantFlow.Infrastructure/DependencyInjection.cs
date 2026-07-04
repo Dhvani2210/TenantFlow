@@ -20,7 +20,7 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddDbContext<TenantFlowDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
                 .LogTo(Console.WriteLine, LogLevel.Information)
                 .EnableSensitiveDataLogging());
 
