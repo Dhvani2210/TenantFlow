@@ -76,7 +76,7 @@ public class AuthService : IAuthService
             {
                 TenantId = Guid.NewGuid(),
                 Name = dto.CompanyName,
-                Email = dto.Email,
+                Email = dto.Email.ToLower(),
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -86,7 +86,7 @@ public class AuthService : IAuthService
                 UserId = Guid.NewGuid(),
                 TenantId = tenant.TenantId,
                 FullName = dto.FullName,
-                Email = dto.Email,
+                Email = dto.Email.ToLower(),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 Role = Domain.Enums.Role.Admin,
                 IsActive = true,

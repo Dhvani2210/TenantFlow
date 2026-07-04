@@ -109,7 +109,7 @@ namespace TenantFlow.Infrastructure.Services
                     UserId = Guid.NewGuid(),
                     FullName = dto.FullName,
                     Role = Enum.Parse<Role>(dto.Role, ignoreCase: true),
-                    Email = dto.Email,
+                    Email = dto.Email.ToLower(),
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                     TenantId = _tenantContext.TenantId,
                     CreatedAt = DateTime.UtcNow,

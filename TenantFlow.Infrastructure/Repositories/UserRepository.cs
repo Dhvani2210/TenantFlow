@@ -81,13 +81,13 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByEmailAsync(string email)
     {
         return await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+            .FirstOrDefaultAsync(u => u.Email == email.ToLower() && u.IsActive);
     }
 
     public async Task<User?> GetByEmailForAuthAsync(string email)
     {
         return await _context.Users
             .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+            .FirstOrDefaultAsync(u => u.Email == email.ToLower() && u.IsActive);
     }
 }
