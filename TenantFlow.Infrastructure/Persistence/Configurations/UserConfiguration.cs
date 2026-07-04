@@ -8,11 +8,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.ToTable("Users", "dbo");
+        builder.ToTable("Users");
         builder.HasKey(u => u.UserId);
 
         builder.Property(u => u.UserId)
-            .HasDefaultValueSql("NEWSEQUENTIALID()");
+            .HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(u => u.Email)
             .IsRequired()
@@ -26,7 +26,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasDefaultValue(true);
 
         builder.Property(u => u.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
+            .HasColumnType("timestamptz")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         // Composite unique constraint — mirrors your UQ on (TenantId, Email) from Day 2
         // This ensures no two users in the same tenant share an email

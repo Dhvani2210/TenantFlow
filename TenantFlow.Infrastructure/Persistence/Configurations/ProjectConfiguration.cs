@@ -8,11 +8,11 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
 {
     public void Configure(EntityTypeBuilder<Project> builder)
     {
-        builder.ToTable("Projects", "dbo");
+        builder.ToTable("Projects");
         builder.HasKey(p => p.ProjectId);
 
         builder.Property(p => p.ProjectId)
-            .HasDefaultValueSql("NEWSEQUENTIALID()");
+            .HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(p => p.Name)
             .IsRequired()
@@ -26,10 +26,11 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
             .HasDefaultValue(true);
 
         builder.Property(p => p.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
+            .HasColumnType("timestamptz")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.Property(p => p.UpdatedAt)
-            .HasColumnType("datetime2")
+            .HasColumnType("timestamptz")
             .IsRequired(false);
 
         // Relationship: many Projects belong to one Tenant

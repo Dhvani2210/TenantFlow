@@ -8,11 +8,11 @@ public class TaskConfiguration : IEntityTypeConfiguration<Domain.Entities.Task>
 {
     public void Configure(EntityTypeBuilder<Domain.Entities.Task> builder)
     {
-        builder.ToTable("Tasks", "dbo");
+        builder.ToTable("Tasks");
         builder.HasKey(t => t.TaskId);
 
         builder.Property(t => t.TaskId)
-            .HasDefaultValueSql("NEWSEQUENTIALID()");
+            .HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(t => t.Name)
             .IsRequired()
@@ -25,10 +25,18 @@ public class TaskConfiguration : IEntityTypeConfiguration<Domain.Entities.Task>
             .HasDefaultValue(true);
 
         builder.Property(t => t.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
+            .HasColumnType("timestamptz")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.Property(p => p.UpdatedAt)
-            .HasColumnType("datetime2")
+            .HasColumnType("timestamptz")
+            .IsRequired(false);
+
+        // DueDate was previously unconfigured — relied on EF's implicit
+        // SQL Server datetime2 mapping. Now explicit, since Postgres has
+        // no default DateTime? mapping we want to leave implicit.
+        builder.Property(t => t.DueDate)
+            .HasColumnType("date")
             .IsRequired(false);
 
         // Relationship: many Tasks belong to one Project
