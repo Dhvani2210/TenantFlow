@@ -1,12 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using TenantFlow.Application.Common.Interfaces;
 using TenantFlow.Application.Interfaces;
 using TenantFlow.Infrastructure.Persistence;
 using TenantFlow.Infrastructure.Repositories;
 using TenantFlow.Infrastructure.Services;
-using TenantFlow.Application.Common.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace TenantFlow.Infrastructure;
 
@@ -17,12 +19,19 @@ public static class DependencyInjection
     // instead of DependencyInjection.AddInfrastructure(services, ...)
     public static IServiceCollection AddInfrastructureServices(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IHostEnvironment environment)
     {
         services.AddDbContext<TenantFlowDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                .LogTo(Console.WriteLine, LogLevel.Information)
-                .EnableSensitiveDataLogging());
+        {
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+
+            if (environment.IsDevelopment())
+            {
+                options.LogTo(Console.WriteLine, LogLevel.Information)
+                       .EnableSensitiveDataLogging();
+            }
+        });
 
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<ITaskRepository, TaskRepository>();
