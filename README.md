@@ -73,6 +73,15 @@ Database-per-tenant or schema-per-tenant would give stronger physical isolation,
 
 **Known limitation:** isolation is currently enforced at the application layer only (EF Core query filters), not reinforced with database-level Row-Level Security (RLS) policies. A raw SQL query that bypasses EF Core could theoretically cross tenant boundaries. RLS as a defense-in-depth layer is a natural next hardening step — it wasn't in scope for the initial build, and is one of the first things I'd add before this went near production traffic.
 
+## Authentication
+
+TenantFlow uses short-lived JWT access tokens (15 minutes) paired with long-lived refresh tokens (7 days), rather than a single long-lived JWT. The access token is returned in the response body and kept in memory on the client; the refresh token is delivered as an `HttpOnly`, `Secure` cookie, scoped to `/api/auth`, so it's never readable by JavaScript — a meaningful mitigation against XSS-based token theft.
+
+Refresh tokens are tracked server-side (hashed, never stored raw) and rotated on every use: each `/refresh` call invalidates the token that was used and issues a new one. If a stolen refresh token is ever reused after the legitimate user has already refreshed, the reuse fails — a signal that something's wrong, rather than a silent compromise that works until natural expiry.
+
+**Known limitation:** no mechanism yet to revoke a specific session remotely (e.g. "log out all other devices") — only the session tied to the refresh token being used can log itself out.
+
+
 ## Deployment
 
 The live demo runs on three separate free-tier services:
