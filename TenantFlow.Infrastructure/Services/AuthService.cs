@@ -1,12 +1,15 @@
 ﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using TenantFlow.Application.Common;
 using TenantFlow.Application.DTOs;
 using TenantFlow.Application.Interfaces;
+using TenantFlow.Domain.Entities;
 using TenantFlow.Infrastructure.Persistence;
 
 namespace TenantFlow.Infrastructure.Services;
@@ -30,6 +33,38 @@ public class AuthService : IAuthService
         _registerValidator = registerValidator;
     }
 
+    private static string GenerateRawRefreshToken()
+    {
+        // 64 random bytes -> long, unguessable string
+        var bytes = RandomNumberGenerator.GetBytes(64);
+        return Convert.ToBase64String(bytes);
+    }
+
+    private static string HashToken(string rawToken)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(rawToken));
+        return Convert.ToBase64String(bytes);
+    }
+
+    private async Task<string> IssueRefreshTokenAsync(Guid userId)
+    {
+        var rawToken = GenerateRawRefreshToken();
+
+        var refreshToken = new RefreshToken
+        {
+            RefreshTokenId = Guid.NewGuid(),
+            UserId = userId,
+            TokenHash = HashToken(rawToken),
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.RefreshTokens.Add(refreshToken);
+        await _context.SaveChangesAsync();
+
+        return rawToken; // caller sends this raw value to the client — DB only ever kept the hash
+    }
+
     public async Task<Result<LoginResponseDto>> LoginAsync(LoginDto dto)
     {
         var validation = await _validator.ValidateAsync(dto);
@@ -49,8 +84,14 @@ public class AuthService : IAuthService
 
         try
         {
-            var token = GenerateToken(user);
-            return Result<LoginResponseDto>.Success(new LoginResponseDto { Token = token });
+            var accessToken = GenerateToken(user);
+            var refreshToken = await IssueRefreshTokenAsync(user.UserId);
+
+            return Result<LoginResponseDto>.Success(new LoginResponseDto
+            {
+                Token = accessToken,
+                RefreshToken = refreshToken
+            });
         }
         catch (Exception ex)
         {
@@ -125,9 +166,59 @@ public class AuthService : IAuthService
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(8),
+            expires: DateTime.UtcNow.AddMinutes(15),
             signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public async Task<Result<LoginResponseDto>> RefreshTokenAsync(string rawToken)
+    {
+        var tokenHash = HashToken(rawToken);  // recompute the hash of what came in
+
+        var existing = await _context.RefreshTokens
+            .FirstOrDefaultAsync(r => r.TokenHash == tokenHash); // does this hash match a stored one?
+
+
+        if (existing is null || !existing.IsActive)
+            return Result<LoginResponseDto>.Failure("Invalid or expired refresh token.", ErrorType.Unauthorized);
+
+        existing.RevokedAt = DateTime.UtcNow; // Rotation: kill the one just used, right away
+
+        var user = await _context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.UserId == existing.UserId && u.IsActive);
+        if (user is null)
+            return Result<LoginResponseDto>.Failure("User not found.", ErrorType.Unauthorized);
+
+        var newAccessToken = GenerateToken(user);
+        var newRefreshToken = await IssueRefreshTokenAsync(user.UserId);
+
+        await _context.SaveChangesAsync(); // persists the RevokedAt change on `existing`
+
+        return Result<LoginResponseDto>.Success(new LoginResponseDto
+        {
+            Token = newAccessToken,
+            RefreshToken = newRefreshToken
+        });
+    }
+
+
+    public async Task<Result> LogoutAsync(string rawToken)
+    {
+        var tokenHash = HashToken(rawToken);
+
+        var existing = await _context.RefreshTokens
+            .FirstOrDefaultAsync(r => r.TokenHash == tokenHash);
+
+        if (existing is not null)
+        {
+            existing.RevokedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
+        // Always succeed, even if the token wasn't found — logging out of
+        // an already-invalid session shouldn't be an error the user sees.
+        return Result.Success();
     }
 }
