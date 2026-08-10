@@ -43,7 +43,7 @@ public class ProjectsController : ApiBaseController
     }
 
 
-    [Authorize(Policy = "RequireAdmin")]
+    [Authorize(Policy = "RequireManager")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProjectDto dto)
     {
@@ -70,7 +70,7 @@ public class ProjectsController : ApiBaseController
         return Ok(result.Value);
     }
 
-    [Authorize(Policy = "RequireAdmin")]
+    [Authorize(Policy = "RequireManager")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
