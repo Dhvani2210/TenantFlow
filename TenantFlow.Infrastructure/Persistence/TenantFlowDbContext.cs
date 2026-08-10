@@ -22,6 +22,7 @@ public class TenantFlowDbContext : DbContext
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Domain.Entities.Task> Tasks => Set<Domain.Entities.Task>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
