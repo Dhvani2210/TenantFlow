@@ -153,10 +153,16 @@ namespace TenantFlow.Infrastructure.Services
             }
         }
 
-        public async Task<Result<bool>> DeleteAsync(Guid id)
+        public async Task<Result<bool>> DeleteAsync(Guid id, Guid callerUserId)
         {
             try
             {
+                if (callerUserId == id)
+                {
+                    return Result<bool>.Failure(
+                                            "User is forbidden to delete himself.",
+                                            ErrorType.Forbidden);
+                }
                 var deleted = await _userRepository.DeleteAsync(id);
 
                 if (!deleted)
