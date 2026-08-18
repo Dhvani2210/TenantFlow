@@ -14,9 +14,9 @@ using TenantFlow.Infrastructure;
 using TenantFlow.Infrastructure.Persistence;
 
 
+Environment.SetEnvironmentVariable("DOTNET_hostBuilder__reloadConfigOnChange", "false");
+
 var builder = WebApplication.CreateBuilder(args);
-//Console.WriteLine(BCrypt.Net.BCrypt.HashPassword("Sarah@123"));
-//Environment.Exit(0);
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration, builder.Environment);
