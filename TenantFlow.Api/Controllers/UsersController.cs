@@ -70,7 +70,8 @@ namespace TenantFlow.Api.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var result = await _userService.DeleteAsync(id);
+            var callerUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _userService.DeleteAsync(id, callerUserId);
 
             if (!result.IsSuccess)
                 return HandleFailure(result);

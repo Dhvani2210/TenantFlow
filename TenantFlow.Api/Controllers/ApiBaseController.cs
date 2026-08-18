@@ -14,6 +14,7 @@ namespace TenantFlow.Api.Controllers
                 ErrorType.Unauthorized => Unauthorized(result.Error),
                 ErrorType.Validation => BadRequest(result.Error),
                 ErrorType.Conflict => Conflict(result.Error),
+                ErrorType.Forbidden => StatusCode(403, result.Error),
                 ErrorType.ServerError => StatusCode(500, result.Error),
                 ErrorType.None => StatusCode(500),
                 _ => StatusCode(500)
@@ -31,6 +32,7 @@ namespace TenantFlow.Api.Controllers
                 ErrorType.Unauthorized => Unauthorized(result.Error),
                 ErrorType.Validation => BadRequest(result.Error),
                 ErrorType.Conflict => Conflict(result.Error),
+                ErrorType.Forbidden => StatusCode(403, result.Error),
                 ErrorType.ServerError => StatusCode(500, result.Error),
                 _ => StatusCode(500)
             };
