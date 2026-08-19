@@ -46,6 +46,12 @@ namespace TenantFlow.Infrastructure.Services
         {
             try
             {
+                var project = await _projectRepository.GetByIdAsync(projectId);
+                if (project is null)
+                    return Result<PagedResult<TaskDto>>.Failure(
+                        "Project not found.",
+                        ErrorType.NotFound);
+
                 var pagedTasks = await _taskRepository.GetAllAsync(projectId, queryParams);
                 var pagedDto = new PagedResult<TaskDto>
                 {
